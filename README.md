@@ -1,2 +1,5 @@
 # IAED_Projeto2
-Sistema de Armazenamento de Ficheiros || File System
+
+🇵🇹 - Segundo projeto de Introdução aos Algoritmos e Estruturas de Dados, 2020/21.
+  
+🇬🇧 - Introduction to Algorithms and Data Structures second project, 2020/21.
