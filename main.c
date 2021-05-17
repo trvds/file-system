@@ -21,30 +21,40 @@
 #define COMMANDLIST_SIZE 8
 
 
-typedef struct { char *key; int val; } commands;
+typedef struct { char *key; int val; char *description;} commands;
 
-static commands commandlist[COMMANDLIST_SIZE] = {
-    { "quit", QUIT }, 
-    { "help", HELP }, 
-    { "set", SET }, 
-    { "print", PRINT }, 
-    { "find", FIND },
-    { "list", LIST },
-    { "search", SEARCH },
-    { "delete", DELETE },
+static commands commandlist[COMMANDLIST_SIZE] = { 
+    { "help", HELP, "Imprime os comandos disponíveis." },
+    { "quit", QUIT, "Termina o programa." },
+    { "set", SET, "Adiciona ou modifica o valor a armazenar." }, 
+    { "print", PRINT, "Imprime todos os caminhos e valores." }, 
+    { "find", FIND, "Imprime o valor armazenado." },
+    { "list", LIST, "Lista todos os componentes de um caminho." },
+    { "search", SEARCH, "Procura o caminho dado um valor." },
+    { "delete", DELETE, "Apaga um caminho e todos os subcaminhos." },
 };
 
 int commandcheck(char *key)
 {
     int i;
-    commands *temp = commandlist;
-    commands *listcheck = temp;
+    commands *listcheck;
     for (i=0; i < COMMANDLIST_SIZE; i++) {
-        listcheck = temp + i;
+        listcheck = commandlist + i;
         if (strcmp(listcheck->key, key) == 0)
             return listcheck->val;
     }
     return -1;
+}
+
+void handle_help_command()
+{
+    int i;
+    commands *temp;
+    for(i=0; i < COMMANDLIST_SIZE; i++){
+        temp = commandlist + i;
+        printf("%s: %s\n", temp->key, temp->description);
+    }
+    return;
 }
 
 int main()
@@ -57,10 +67,7 @@ int main()
         switch(commandcheck(input))
         {
         case HELP:
-            /* code */
-            printf("help");
-            fgets(input, INPUT_MAX_SIZE, stdin);
-            printf("%s", input);
+            handle_help_command();
             break;
 
         case SET:
@@ -113,5 +120,5 @@ int main()
             break;
         }
     }
-    return 0;
+    return QUIT;
 }
