@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "files.h"
 
 
@@ -8,26 +10,26 @@
 list_link new_listlink(tree_link new_tree)
 {
     list_link new = (list_link) malloc(sizeof(struct list_node));
-    new -> current = new_tree;
+    new -> dir = new_tree;
     new -> next = NULL;
     return new;
 }
 
 /* Inserir a node na lista */
-list_link insert_listlink(list_link head, tree_link new_tree)
+list_link insert_listlink(list_link head, tree_link dir)
 {
     list_link new;
     if (head == NULL)
-        return new_listlink(new_tree);
+        return new_listlink(dir);
     for(new = head; new -> next != NULL; new = new -> next)
         ;
-    new -> next = new_listlink(new_tree);
+    new -> next = new_listlink(dir);
     return head;
 }
 
 
 /* Eliminar a node da lista */
-list_link delete_listlink(list_link head, tree_link ptr)
+list_link delete_listlink(list_link head, list_link ptr)
 {
     list_link t, prev;
     for (t = head, prev = NULL; t != NULL; prev = t, t = t -> next)
@@ -42,13 +44,14 @@ list_link delete_listlink(list_link head, tree_link ptr)
             break;
         }
     }
+    return head;
 }
 
 
 /* = AVL functions ===========================================================*/
 
 /* Criar node da árvore*/
-tree_link NEW(char* dir_name, void* value, tree_link l, tree_link r)
+tree_link new_treelink(char* dir_name, char* value, tree_link l, tree_link r)
 {
     tree_link new = (tree_link) malloc(sizeof(struct tree_node));
     new -> dir = dir_name;
@@ -160,36 +163,37 @@ tree_link AVLbalance(tree_link h)
 
 
 /* Inserir um node da árvore */
-tree_link insertR(tree_link h, char *dir_name, void *value)
+tree_link insert_treelink(tree_link h, char *dir_name, char *value)
 {
     if (h == NULL)
-        return NEW(dir_name, value, NULL, NULL);
+        return new_treelink(dir_name, value, NULL, NULL);
     if (strcmp(dir_name, h -> dir) < 0)
-        h->left = insertR(h->left, dir_name, value);
+        h->left = insert_treelink(h->left, dir_name, value);
     else
-        h->right = insertR(h->right, dir_name, value);
+        h->right = insert_treelink(h->right, dir_name, value);
     h = AVLbalance(h);
     return h;
 }
 
 
 /* Eliminar um node da árvore */
-tree_link deleteR(tree_link h, char *dir_name)
+tree_link delete_treelink(tree_link h, char *dir_name)
 {
+    tree_link aux;
     if (h == NULL)
         return h;
     else if (strcmp(dir_name, h -> dir) < 0)
-        h->left = deleteR(h->left, dir_name);
+        h->left = delete_treelink(h->left, dir_name);
     else if (strcmp(h -> dir, dir_name) < 0) 
-        h->right = deleteR(h->right, dir_name) ;
+        h->right = delete_treelink(h->right, dir_name) ;
     else{
         if (h->left != NULL && h->right != NULL){
-            tree_link aux = max(h->left);
+            aux = max_tree(h->left);
             {char *x; x = h->dir; h->dir = aux->dir; aux->dir = x;}
-            h->left = deleteR(h->left, key(aux->dir));
+            h->left = delete_treelink(h->left, aux->dir);
         }
         else {
-            tree_link aux = h;
+            aux = h;
             if (h->left == NULL && h->right == NULL) h = NULL;
             else if (h->left == NULL) h = h->right;
             else h = h->left;
@@ -204,3 +208,28 @@ tree_link deleteR(tree_link h, char *dir_name)
 }
 
 
+tree_link max_tree(tree_link h) {
+    if (h == NULL || h->right == NULL)
+        return h;
+    else
+        return max_tree(h->right);
+}
+
+tree_link min_tree(tree_link h) {
+    if (h == NULL || h->left == NULL)
+        return h;
+    else
+        return min_tree(h->left);
+}
+
+
+tree_link search_tree(tree_link h, char *dir_name) {
+    if (h == NULL)
+        return NULL;
+    if (strcmp(dir_name, h -> dir) == 0)
+        return h;
+    if (strcmp(dir_name, h -> dir) < 0)
+        return search_tree(h->left, dir_name);
+    else
+        return search_tree(h->right, dir_name);
+}

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "files.h"
 
 #define INPUT_MAX_SIZE 65536
 #define QUIT 0
@@ -20,16 +21,17 @@
 #define DELETE 7
 #define COMMANDLIST_SIZE 8
 
-
+/* Estrutura para a lista de comandos */
 typedef struct { char *key; int val; char *description;} commands;
 
+/* Lista de comandos */
 static commands commandlist[COMMANDLIST_SIZE] = { 
     { "help", HELP, "Imprime os comandos disponíveis." },
     { "quit", QUIT, "Termina o programa." },
     { "set", SET, "Adiciona ou modifica o valor a armazenar." }, 
     { "print", PRINT, "Imprime todos os caminhos e valores." }, 
     { "find", FIND, "Imprime o valor armazenado." },
-    { "list", LIST, "Lista todos os componentes de um caminho." },
+    { "list", LIST, "Lista todos os componentes imediatos de um sub-caminho." },
     { "search", SEARCH, "Procura o caminho dado um valor." },
     { "delete", DELETE, "Apaga um caminho e todos os subcaminhos." },
 };
@@ -57,9 +59,122 @@ void handle_help_command()
     return;
 }
 
+
+void handle_set_command(tree_link root)
+{
+    tree_link current_dir, father_dir = root;
+    char path_buffer[INPUT_MAX_SIZE];
+    char value_buffer[INPUT_MAX_SIZE];
+    char *dir_token, *value, *new_dir;
+    char c;
+
+    scanf("%s", path_buffer);
+    /* analisar cada diretoria*/
+    dir_token = strtok(path_buffer, "/");
+    while(dir_token != NULL)
+    {
+        current_dir = search_tree(father_dir -> subdirs, dir_token);
+        /* a diretoria já existe, passar para a subdiretoria */
+        if(current_dir == NULL)
+        {
+            /* alocar memoria para a subdiretoria */
+            new_dir = (char *)malloc(sizeof(char)*strlen(dir_token));
+            strcpy(new_dir, dir_token);
+            /* inserir subdiretoria na diretoria pai */
+            father_dir -> subdirs = insert_treelink(father_dir->subdirs, new_dir, NULL);
+            /* ir buscar o pointer da subdiretoria acabada de criar */
+            current_dir = search_tree(father_dir -> subdirs, new_dir);
+            /* criar lista da ordem de criação das diretorias */
+            father_dir -> creation = insert_listlink(father_dir -> creation, current_dir);
+            /* vamos passar para a subdiretoria a analisar */
+            father_dir = current_dir;
+        }
+        else
+        {
+            /* a diretoria já existe, passar para a subdiretoria*/
+            father_dir = current_dir;
+        }
+        dir_token = strtok(NULL, "/");
+    }
+    if((c = getchar()) == ' ')
+    {
+    scanf("%s", value_buffer);
+    value = (char *)malloc(sizeof(char)*(strlen(value_buffer)));
+    strcpy(value, value_buffer);
+    }
+    else
+        value = NULL;
+    free(father_dir -> value);
+    father_dir -> value = value;
+}
+
+
+void handle_find_command(tree_link root)
+{
+    tree_link current_node = root;
+    char path_buffer[INPUT_MAX_SIZE];
+    char *dir_token, *value;
+
+    scanf("%s", path_buffer);
+    dir_token = strtok(path_buffer, "/");
+    while(dir_token != NULL)
+    {
+        current_node = current_node -> subdirs;
+        current_node = search_tree(current_node, dir_token);
+        if(current_node == NULL){
+            printf("not found\n");
+            return;
+        }
+        dir_token = strtok(NULL, "/");
+    }
+    
+    value = current_node -> value;
+    if (value == NULL)
+        printf("no data\n");
+    else
+        printf("%s\n", value);
+}
+
+
+void print_subdirs(tree_link head, char* path_buffer)
+{
+        if (head == NULL)
+            return;
+        print_subdirs(head->left, path_buffer);
+        printf("%s/", path_buffer);
+        printf("%s\n", head->dir);
+        print_subdirs(head->right, path_buffer);
+    return;
+}
+
+
+void handle_list_command(tree_link root)
+{
+    tree_link current_node = root;
+    char path_buffer[INPUT_MAX_SIZE];
+    char *dir_token;
+
+    scanf("%s", path_buffer);
+    dir_token = strtok(path_buffer, "/");
+    while(dir_token != NULL)
+    {
+        current_node = current_node -> subdirs;
+        current_node = search_tree(current_node, dir_token);
+        if(current_node == NULL){
+            printf("not found\n");
+            return;
+        }
+        dir_token = strtok(NULL, "/");
+    }
+    print_subdirs(current_node -> subdirs, path_buffer);
+}
+
+
 int main()
 {
     char input[INPUT_MAX_SIZE];
+    tree_link root;
+    root = new_treelink(NULL, NULL, NULL, NULL);
 
     while(commandcheck(input) != QUIT)
     {
@@ -69,35 +184,20 @@ int main()
         case HELP:
             handle_help_command();
             break;
-
         case SET:
             /* code */
-            printf("set");
-            fgets(input, INPUT_MAX_SIZE, stdin);
-            printf("%s", input);
+            handle_set_command(root);
             break;
-
         case PRINT:
             /* code */
-            printf("print");
-            fgets(input, INPUT_MAX_SIZE, stdin);
-            printf("%s", input);
+            printf("algo");
             break;
-
         case FIND:
-            /* code */
-            printf("find");
-            fgets(input, INPUT_MAX_SIZE, stdin);
-            printf("%s", input);
+            handle_find_command(root);
             break;
-
         case LIST:
-            /* code */
-            printf("list");
-            fgets(input, INPUT_MAX_SIZE, stdin);
-            printf("%s", input);
+            handle_list_command(root);
             break;
-
         case SEARCH:
             /* code */
             printf("search");
