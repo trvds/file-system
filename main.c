@@ -20,6 +20,7 @@
 #define SEARCH 6
 #define DELETE 7
 #define COMMANDLIST_SIZE 8
+#define ROOT_NAME "root"
 
 /* Estrutura para a lista de comandos */
 typedef struct { char *key; int val; char *description;} commands;
@@ -84,6 +85,8 @@ void handle_set_command(tree_link root)
             father_dir -> subdirs = insert_treelink(father_dir->subdirs, new_dir, NULL);
             /* ir buscar o pointer da subdiretoria acabada de criar */
             current_dir = search_tree(father_dir -> subdirs, new_dir);
+            /* inserir o pointer para a diretoria pai na subdiretoria */
+            current_dir -> parent_dir = father_dir;
             /* criar lista da ordem de criação das diretorias */
             father_dir -> creation = insert_listlink(father_dir -> creation, current_dir);
             /* vamos passar para a subdiretoria a analisar */
@@ -98,14 +101,51 @@ void handle_set_command(tree_link root)
     }
     if((c = getchar()) == ' ')
     {
-    scanf("%s", value_buffer);
-    value = (char *)malloc(sizeof(char)*(strlen(value_buffer)));
-    strcpy(value, value_buffer);
+        scanf("%s", value_buffer);
+        value = (char *)malloc(sizeof(char)*(strlen(value_buffer)));
+        strcpy(value, value_buffer);
     }
     else
         value = NULL;
-    free(father_dir -> value);
-    father_dir -> value = value;
+        free(father_dir -> value);
+        father_dir -> value = value;
+}
+
+void check_tree_node(tree_link node);
+void check_list_node(list_link node);
+void print_directory(tree_link node);
+
+void handle_print_command(tree_link root)
+{
+    check_list_node(root -> creation);
+}
+
+void check_tree_node(tree_link node)
+{
+    print_directory(node);
+    if (node -> value != NULL)
+        printf(" %s\n", node -> value);
+    else
+        printf("\n");
+    check_list_node(node -> creation);
+    return;
+}
+
+void check_list_node(list_link node)
+{
+    if(node == NULL)
+        return;
+    check_tree_node(node->dir);
+    check_list_node(node->next);
+}
+
+void print_directory(tree_link node)
+{
+    if (node->dir == NULL)
+        return;
+    print_directory(node->parent_dir);
+    printf("/%s", node->dir);
+    return;
 }
 
 
@@ -185,12 +225,10 @@ int main()
             handle_help_command();
             break;
         case SET:
-            /* code */
             handle_set_command(root);
             break;
         case PRINT:
-            /* code */
-            printf("algo");
+            handle_print_command(root);
             break;
         case FIND:
             handle_find_command(root);

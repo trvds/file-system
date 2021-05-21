@@ -8,6 +8,7 @@ typedef struct tree_node
 {
     char *dir; /* nome da diretoria */
     char *value; /* valor da diretoria */
+    struct tree_node *parent_dir;
     struct tree_node *subdirs; /* arvore com as subdiretorias da diretoria */
     struct list_node *creation; /* lista da ordem de criacao das subdiretorias */
     struct tree_node *left; /* node esquerda */
