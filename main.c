@@ -20,6 +20,7 @@
 #define SEARCH 6
 #define DELETE 7
 #define COMMANDLIST_SIZE 8
+#define HASH_VALUE 7993
 
 
 /* Estrutura para a lista de comandos */
@@ -107,8 +108,14 @@ void handle_set_command(tree_link root)
     }
     else
         value = NULL;
+    
+    delete_hash(father_dir);
     free(father_dir -> value);
+
     father_dir -> value = value;
+
+    if(value != NULL)
+        insert_hash(father_dir);
 }
 
 void check_tree_node(tree_link node);
@@ -214,10 +221,41 @@ void handle_list_command(tree_link root)
 }
 
 
+void handle_search_command()
+{
+    char value_buffer[INPUT_MAX_SIZE];
+    list_link h;
+    int i;
+
+    getchar();
+    scanf("%[^\n]s", value_buffer);
+    
+    i = hash_s(value_buffer);
+    h = hash_head[i];
+    while(h != NULL)
+    {
+        if (strcmp(h->dir->value, value_buffer) == 0)
+            break;
+        h = h -> next;
+    }
+
+    if (h == NULL)
+        printf("not found\n");
+    else
+    {
+        print_directory(h -> dir);
+        printf("\n");
+    }
+
+}
+
+
 int main()
 {
     char input[INPUT_MAX_SIZE];
     tree_link root;
+    init_hashtable(HASH_VALUE);
+    
     root = new_treelink(NULL, NULL, NULL, NULL);
 
     while(commandcheck(input) != QUIT)
@@ -241,7 +279,7 @@ int main()
             handle_list_command(root);
             break;
         case SEARCH:
-            printf("workind in progress");
+            handle_search_command();
             break;
         case DELETE:
             printf("workind in progress");

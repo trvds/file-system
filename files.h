@@ -2,6 +2,7 @@
 #define FILES
 
 
+
 /*--------------------------------------------ESTRUTURAS------------------------------------------*/
 
 /* Estrutura de uma node da AVL tree*/
@@ -18,7 +19,7 @@ typedef struct tree_node
 }* tree_link;
 
 
-/* Estrtura de uma node da Linked List*/
+/* Estrutura de uma node da Linked List*/
 typedef struct list_node
 {
     tree_link dir; /* nome da diretoria */
@@ -33,7 +34,7 @@ typedef struct list_node
 /* Funções de manipulação das Linked Lists */
 list_link new_listlink(tree_link dir);
 list_link insert_listlink(list_link head, tree_link dir);
-list_link delete_listlink(list_link head, list_link ptr);
+list_link delete_listlink(list_link head, tree_link ptr);
 
 /* Funções de manipulação das AVL Trees */
 tree_link new_treelink(char* dir_name, char* value, tree_link l, tree_link r);
@@ -50,5 +51,12 @@ tree_link max_tree(tree_link h);
 tree_link min_tree(tree_link h);
 tree_link search_tree(tree_link h, char *dir_name);
 
+/* Funções de manipulação da HASH TABLE */
+extern list_link *hash_head;
+
+int hash_s(char *value);
+void init_hashtable(int m);
+void insert_hash(tree_link h);
+void delete_hash(tree_link h);
 
 #endif

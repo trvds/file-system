@@ -29,12 +29,12 @@ list_link insert_listlink(list_link head, tree_link dir)
 
 
 /* Eliminar a node da lista */
-list_link delete_listlink(list_link head, list_link ptr)
+list_link delete_listlink(list_link head, tree_link ptr)
 {
     list_link t, prev;
     for (t = head, prev = NULL; t != NULL; prev = t, t = t -> next)
     {
-        if (t == ptr){
+        if (t -> dir == ptr){
             if (t == head)
                 head = t -> next;
             else
@@ -45,6 +45,19 @@ list_link delete_listlink(list_link head, list_link ptr)
         }
     }
     return head;
+}
+
+
+/* Procurar um valor na lista */
+list_link search_list(list_link head, tree_link ptr)
+{
+    list_link x = head;
+    while(x != NULL) {
+        if(x->dir == ptr)
+            return x;
+        x = x -> next;
+    }
+    return x;
 }
 
 
@@ -233,3 +246,43 @@ tree_link search_tree(tree_link h, char *dir_name) {
     else
         return search_tree(h->right, dir_name);
 }
+
+/* = HASH TABLE ==============================================================*/
+#define HASH_VALUE 7993
+list_link *hash_head;
+
+int hash_s(char *value) /*Criar chave para a hashtable*/
+{
+    int M = HASH_VALUE;
+    int h, a = 31415, b = 27183;
+    for (h = 0; *value != '\0'; value++, a = a*b % (M-1))
+        h = (a*h + *value) % M;
+    return h;
+}
+
+void init_hashtable(int m) /* Inicializar a hashtable */
+{
+    int i;
+    int M = m;
+    hash_head = malloc(M*sizeof(list_link));
+    for (i = 0; i < M; i++)
+        hash_head[i] = NULL;
+}
+
+
+void insert_hash(tree_link h) /* Inserir na hashtable */
+{
+    int i = hash_s(h->value);
+    hash_head[i] = insert_listlink(hash_head[i], h);
+}
+
+
+void delete_hash(tree_link h) /*Apagar da hashtable*/
+{
+    int i;
+    if (h->value == NULL)
+        return;
+    i = hash_s(h->value);
+    hash_head[i] = delete_listlink(hash_head[i], h);
+}
+
