@@ -20,7 +20,7 @@
 #define SEARCH 6
 #define DELETE 7
 #define COMMANDLIST_SIZE 8
-#define ROOT_NAME "root"
+
 
 /* Estrutura para a lista de comandos */
 typedef struct { char *key; int val; char *description;} commands;
@@ -79,7 +79,7 @@ void handle_set_command(tree_link root)
         if(current_dir == NULL)
         {
             /* alocar memoria para a subdiretoria */
-            new_dir = (char *)malloc(sizeof(char)*strlen(dir_token));
+            new_dir = (char *)malloc(sizeof(char)*(strlen(dir_token)+1));
             strcpy(new_dir, dir_token);
             /* inserir subdiretoria na diretoria pai */
             father_dir -> subdirs = insert_treelink(father_dir->subdirs, new_dir, NULL);
@@ -101,14 +101,14 @@ void handle_set_command(tree_link root)
     }
     if((c = getchar()) == ' ')
     {
-        scanf("%s", value_buffer);
-        value = (char *)malloc(sizeof(char)*(strlen(value_buffer)));
+        scanf("%[^\n]s", value_buffer);
+        value = (char *)malloc(sizeof(char)*((strlen(value_buffer)+1)));
         strcpy(value, value_buffer);
     }
     else
         value = NULL;
-        free(father_dir -> value);
-        father_dir -> value = value;
+    free(father_dir -> value);
+    father_dir -> value = value;
 }
 
 void check_tree_node(tree_link node);
@@ -122,11 +122,11 @@ void handle_print_command(tree_link root)
 
 void check_tree_node(tree_link node)
 {
-    print_directory(node);
     if (node -> value != NULL)
+    {
+        print_directory(node);
         printf(" %s\n", node -> value);
-    else
-        printf("\n");
+    }
     check_list_node(node -> creation);
     return;
 }
@@ -176,14 +176,13 @@ void handle_find_command(tree_link root)
 }
 
 
-void print_subdirs(tree_link head, char* path_buffer)
+void print_subdirs(tree_link head)
 {
         if (head == NULL)
             return;
-        print_subdirs(head->left, path_buffer);
-        printf("%s/", path_buffer);
+        print_subdirs(head->left);
         printf("%s\n", head->dir);
-        print_subdirs(head->right, path_buffer);
+        print_subdirs(head->right);
     return;
 }
 
@@ -193,20 +192,25 @@ void handle_list_command(tree_link root)
     tree_link current_node = root;
     char path_buffer[INPUT_MAX_SIZE];
     char *dir_token;
+    char c;
 
-    scanf("%s", path_buffer);
-    dir_token = strtok(path_buffer, "/");
-    while(dir_token != NULL)
+    if((c = getchar()) == ' ')
     {
-        current_node = current_node -> subdirs;
-        current_node = search_tree(current_node, dir_token);
-        if(current_node == NULL){
-            printf("not found\n");
-            return;
+        scanf("%s", path_buffer);
+        dir_token = strtok(path_buffer, "/");
+        while(dir_token != NULL)
+        {
+            current_node = current_node -> subdirs;
+            current_node = search_tree(current_node, dir_token);
+            if(current_node == NULL){
+                printf("not found\n");
+                return;
+            }
+            dir_token = strtok(NULL, "/");
         }
-        dir_token = strtok(NULL, "/");
     }
-    print_subdirs(current_node -> subdirs, path_buffer);
+
+    print_subdirs(current_node -> subdirs);
 }
 
 
@@ -237,22 +241,13 @@ int main()
             handle_list_command(root);
             break;
         case SEARCH:
-            /* code */
-            printf("search");
-            fgets(input, INPUT_MAX_SIZE, stdin);
-            printf("%s", input);
+            printf("workind in progress");
             break;
-
         case DELETE:
-            /* code */
-            printf("delete");
-            fgets(input, INPUT_MAX_SIZE, stdin);
-            printf("%s", input);
+            printf("workind in progress");
             break;
-        
         case QUIT:
             break;
-
         default:
             printf("Erro no argumento introduzido!\n");
             break;

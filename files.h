@@ -4,6 +4,7 @@
 
 /*--------------------------------------------ESTRUTURAS------------------------------------------*/
 
+/* Estrutura de uma node da AVL tree*/
 typedef struct tree_node
 {
     char *dir; /* nome da diretoria */
@@ -17,6 +18,7 @@ typedef struct tree_node
 }* tree_link;
 
 
+/* Estrtura de uma node da Linked List*/
 typedef struct list_node
 {
     tree_link dir; /* nome da diretoria */
