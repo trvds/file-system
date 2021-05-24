@@ -147,13 +147,15 @@ void handle_set_command(tree_link root, list_link *hash_head)
             memory_check(new_dir);
             strcpy(new_dir, dir_token);
             /* inserir subdiretoria na diretoria pai */
-            father_dir -> directory -> subdirs = insert_treelink(father_dir->directory->subdirs, new_dir, NULL);
+            father_dir -> directory -> subdirs =
+            insert_treelink(father_dir->directory->subdirs, new_dir, NULL);
             /* ir buscar o pointer da subdiretoria acabada de criar */
             current_dir = search_tree(father_dir -> directory -> subdirs, new_dir);
             /* inserir o pointer para a diretoria pai na subdiretoria */
             current_dir -> directory -> parent_dir = father_dir;
             /* criar lista da ordem de criação das diretorias */
-            father_dir -> directory -> creation = insert_listlink(father_dir -> directory -> creation, current_dir -> directory);
+            father_dir -> directory -> creation =
+            insert_listlink(father_dir -> directory -> creation, current_dir -> directory);
             /* vamos passar para a subdiretoria a analisar */
             father_dir = current_dir;
         }
@@ -182,6 +184,7 @@ void handle_set_command(tree_link root, list_link *hash_head)
     /* apagar qualque entrada anterior de um valor na hash-table e na node */
     delete_hash(father_dir, hash_head);
     free(father_dir -> directory -> value);
+    father_dir -> directory -> value = NULL;
     /* inserir o novo value na node da diretoria */
     father_dir -> directory -> value = value;
     /* inserir o novo value na hash table se este existir */
@@ -442,9 +445,13 @@ void delete_tree(tree_link h, list_link *hash_head)
     delete_hash(h, hash_head);
     /* dar free da string do nome da diretoria e do value */
     free(h->directory->dir);
+    h->directory->dir = NULL;
     free(h->directory->value);
+    h->directory->value = NULL;
     free(h-> directory);
+    h-> directory = NULL;
     free(h);
+    h = NULL;
     return;
 }
 

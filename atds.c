@@ -49,6 +49,7 @@ list_link delete_listlink(list_link head, dir_link ptr)
                 prev -> next = t -> next;
             t -> next = NULL;
             free(t);
+            t = NULL;
             break;
         }
     }
@@ -76,6 +77,7 @@ void nuke_list(list_link head)
         return;
     nuke_list(head -> next);
     free(head);
+    head = NULL;
     return;
 }
 
@@ -239,9 +241,13 @@ tree_link delete_treelink(tree_link h, char *dir_name)
             else if (h->left == NULL) h = h->right;
             else h = h->left;
             free(aux->directory->dir);
+            aux->directory->dir = NULL;
             free(aux->directory->value);
+            aux->directory->value = NULL;
             free(aux->directory);
+            aux->directory = NULL;
             free(aux);
+            aux = NULL;
         }
     }
     h = AVLbalance(h);
