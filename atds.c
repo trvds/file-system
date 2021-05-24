@@ -1,7 +1,14 @@
+/*
+    Ficheiro:  atds.c
+    Autor:  Tiago Rodrigues Vieira da Silva
+    Descrição:  Funções para a manipulação das ATDS do atds.h
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "files.h"
+#include "atds.h"
+#include "functions.h"
 
 
 /* = Funções da lista ======================================================= */
@@ -10,6 +17,7 @@
 list_link new_listlink(tree_link new_tree)
 {
     list_link new = (list_link) malloc(sizeof(struct list_node));
+    memory_check(new);
     new -> dir = new_tree;
     new -> next = NULL;
     return new;
@@ -39,8 +47,8 @@ list_link delete_listlink(list_link head, tree_link ptr)
                 head = t -> next;
             else
                 prev -> next = t -> next;
+            t -> next = NULL;
             free(t);
-            t = NULL;
             break;
         }
     }
@@ -61,12 +69,23 @@ list_link search_list(list_link head, tree_link ptr)
 }
 
 
-/* = AVL functions ===========================================================*/
+/* Apagar a lista toda */
+void nuke_list(list_link head)
+{
+    if (head == NULL)
+        return;
+    nuke_list(head -> next);
+    free(head);
+    return;
+}
+
+/* = Funções da AVL ==========================================================*/
 
 /* Criar node da árvore*/
 tree_link new_treelink(char* dir_name, char* value, tree_link l, tree_link r)
 {
     tree_link new = (tree_link) malloc(sizeof(struct tree_node));
+    memory_check(new);
     new -> dir = dir_name;
     new -> value = value;
     new -> subdirs = NULL;
@@ -211,9 +230,8 @@ tree_link delete_treelink(tree_link h, char *dir_name)
             else if (h->left == NULL) h = h->right;
             else h = h->left;
             free(aux->dir);
-            aux -> dir = NULL;
+            free(aux->value);
             free(aux);
-            aux = NULL;
         }
     }
     h = AVLbalance(h);
@@ -221,6 +239,7 @@ tree_link delete_treelink(tree_link h, char *dir_name)
 }
 
 
+/* Obter o máximo da árvore */
 tree_link max_tree(tree_link h) {
     if (h == NULL || h->right == NULL)
         return h;
@@ -228,6 +247,7 @@ tree_link max_tree(tree_link h) {
         return max_tree(h->right);
 }
 
+/* Obter o minímo da árvore */
 tree_link min_tree(tree_link h) {
     if (h == NULL || h->left == NULL)
         return h;
@@ -236,6 +256,7 @@ tree_link min_tree(tree_link h) {
 }
 
 
+/* Procurar por um elemento na árvore */
 tree_link search_tree(tree_link h, char *dir_name) {
     if (h == NULL)
         return NULL;
@@ -247,37 +268,29 @@ tree_link search_tree(tree_link h, char *dir_name) {
         return search_tree(h->right, dir_name);
 }
 
-/* = HASH TABLE ==============================================================*/
-#define HASH_VALUE 7993
-list_link *hash_head;
+/* = funções da Hash Table ===================================================*/
+#define HASH_VALUE 171007
 
-int hash_s(char *value) /*Criar chave para a hashtable*/
+/*Criar chave para a hashtable*/
+unsigned long hash_s(char *value)
 {
-    int M = HASH_VALUE;
-    int h, a = 31415, b = 27183;
-    for (h = 0; *value != '\0'; value++, a = a*b % (M-1))
-        h = (a*h + *value) % M;
+    unsigned long h, a = 31415, b = 27183;
+    for (h = 0; *value != '\0'; value++, a = a*b % (HASH_VALUE-1))
+        h = (a*h + *value) % HASH_VALUE;
     return h;
 }
 
-void init_hashtable(int m) /* Inicializar a hashtable */
-{
-    int i;
-    int M = m;
-    hash_head = malloc(M*sizeof(list_link));
-    for (i = 0; i < M; i++)
-        hash_head[i] = NULL;
-}
 
-
-void insert_hash(tree_link h) /* Inserir na hashtable */
+/* Inserir na hashtable */
+void insert_hash(tree_link h, list_link *hash_head)
 {
     int i = hash_s(h->value);
     hash_head[i] = insert_listlink(hash_head[i], h);
 }
 
 
-void delete_hash(tree_link h) /*Apagar da hashtable*/
+/*Apagar da hashtable*/
+void delete_hash(tree_link h, list_link *hash_head)
 {
     int i;
     if (h->value == NULL)
@@ -285,4 +298,3 @@ void delete_hash(tree_link h) /*Apagar da hashtable*/
     i = hash_s(h->value);
     hash_head[i] = delete_listlink(hash_head[i], h);
 }
-
