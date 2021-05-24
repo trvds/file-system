@@ -10,14 +10,21 @@
 
 /*--------------------------------ESTRUTURAS----------------------------------*/
 
-/* Estrutura de uma node da AVL tree*/
-typedef struct tree_node
+/* Estrutura de uma node de uma diretoria */
+typedef struct dir_node
 {
     char *dir; /* nome da diretoria */
     char *value; /* valor da diretoria */
-    struct tree_node *parent_dir;
+    struct tree_node *parent_dir; /* pointer para a diretoria */
     struct tree_node *subdirs; /* arvore com as subdiretorias da diretoria */
     struct list_node *creation; /* lista da ordem de criacao das subdiretorias*/
+}* dir_link;
+
+
+/* Estrutura de uma node da AVL tree */
+typedef struct tree_node
+{
+    struct dir_node *directory; /* node de uma diretoria */
     struct tree_node *left; /* node esquerda */
     struct tree_node *right; /* node direita */
     int height; /* altura da node*/
@@ -27,7 +34,7 @@ typedef struct tree_node
 /* Estrutura de uma node da Linked List*/
 typedef struct list_node
 {
-    tree_link dir; /* nome da diretoria */
+    dir_link dir; /* nome da diretoria */
     struct list_node *next; /* pointer para a node seguinte*/
 }* list_link;
 
@@ -37,12 +44,15 @@ typedef struct list_node
 /*-----------------------------------FUNÇÕES----------------------------------*/
 
 /* Funções de manipulação das Linked Lists */
-list_link new_listlink(tree_link dir);
-list_link insert_listlink(list_link head, tree_link dir);
-list_link delete_listlink(list_link head, tree_link ptr);
+list_link new_listlink(dir_link dir);
+list_link insert_listlink(list_link head, dir_link dir);
+list_link delete_listlink(list_link head, dir_link ptr);
+list_link search_list(list_link head, dir_link ptr);
 void nuke_list(list_link head);
 
 /* Funções de manipulação das AVL Trees */
+dir_link new_dirlink(char* dir_name, char* value);
+
 tree_link new_treelink(char* dir_name, char* value, tree_link l, tree_link r);
 int height(tree_link h);
 tree_link rotL(tree_link h);

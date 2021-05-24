@@ -137,7 +137,7 @@ void handle_set_command(tree_link root, list_link *hash_head)
     while(dir_token != NULL)
     {
         /* ver se a diretoria que estamos a analisar já existe */
-        current_dir = search_tree(father_dir -> subdirs, dir_token);
+        current_dir = search_tree(father_dir-> directory -> subdirs, dir_token);
         /* a diretoria não existe, por isso teremos que a criar */
         if(current_dir == NULL)
         {
@@ -147,13 +147,13 @@ void handle_set_command(tree_link root, list_link *hash_head)
             memory_check(new_dir);
             strcpy(new_dir, dir_token);
             /* inserir subdiretoria na diretoria pai */
-            father_dir -> subdirs = insert_treelink(father_dir->subdirs, new_dir, NULL);
+            father_dir -> directory -> subdirs = insert_treelink(father_dir->directory->subdirs, new_dir, NULL);
             /* ir buscar o pointer da subdiretoria acabada de criar */
-            current_dir = search_tree(father_dir -> subdirs, new_dir);
+            current_dir = search_tree(father_dir -> directory -> subdirs, new_dir);
             /* inserir o pointer para a diretoria pai na subdiretoria */
-            current_dir -> parent_dir = father_dir;
+            current_dir -> directory -> parent_dir = father_dir;
             /* criar lista da ordem de criação das diretorias */
-            father_dir -> creation = insert_listlink(father_dir -> creation, current_dir);
+            father_dir -> directory -> creation = insert_listlink(father_dir -> directory -> creation, current_dir -> directory);
             /* vamos passar para a subdiretoria a analisar */
             father_dir = current_dir;
         }
@@ -181,9 +181,9 @@ void handle_set_command(tree_link root, list_link *hash_head)
         value = NULL;
     /* apagar qualque entrada anterior de um valor na hash-table e na node */
     delete_hash(father_dir, hash_head);
-    free(father_dir -> value);
+    free(father_dir -> directory -> value);
     /* inserir o novo value na node da diretoria */
-    father_dir -> value = value;
+    father_dir -> directory -> value = value;
     /* inserir o novo value na hash table se este existir */
     if(value != NULL)
         insert_hash(father_dir, hash_head);
@@ -196,7 +196,7 @@ void handle_set_command(tree_link root, list_link *hash_head)
 */
 void handle_print_command(tree_link root)
 {
-    check_list_node(root -> creation);
+    check_list_node(root -> directory -> creation);
 }
 
 /*
@@ -214,7 +214,7 @@ void check_list_node(list_link node)    /* recebe uma node da lista de criação
     check_list_node(node->next);
 }
 
-void check_tree_node(tree_link node)
+void check_tree_node(dir_link node)
 {
     /* imprimir a diretoria se tiver valor associado */
     if (node -> value != NULL)
@@ -232,13 +232,13 @@ void check_tree_node(tree_link node)
     Função auxiliar que imprime o path completo de uma diretoria por
     ordem de profundidade.
 */
-void print_directory(tree_link node)
+void print_directory(dir_link node)
 {
     /* Condição de paragem da recursão */
     if (node->dir == NULL)
         return;
     /* Ir para a diretoria pai */
-    print_directory(node->parent_dir);
+    print_directory(node->parent_dir->directory);
     /* Imprimir a diretoria, por ordem de profundidade */
     printf("/%s", node->dir);
     return;
@@ -259,7 +259,7 @@ void handle_find_command(tree_link root)
     dir_token = strtok(path_buffer, "/");
     while(dir_token != NULL)
     {
-        current_node = current_node -> subdirs;
+        current_node = current_node -> directory -> subdirs;
         current_node = search_tree(current_node, dir_token);
         /* se a node não existir devolver a mensagem de erro */
         if(current_node == NULL){
@@ -269,7 +269,7 @@ void handle_find_command(tree_link root)
         dir_token = strtok(NULL, "/");
     }
     /* retirar o value da node e apresentá-lo se existir */
-    value = current_node -> value;
+    value = current_node -> directory -> value;
     if (value == NULL)
         printf(NO_DATA);
     else
@@ -296,7 +296,7 @@ void handle_list_command(tree_link root)
         dir_token = strtok(path_buffer, "/");
         while(dir_token != NULL)
         {
-            current_node = current_node -> subdirs;
+            current_node = current_node -> directory -> subdirs;
             current_node = search_tree(current_node, dir_token);
             /* se a node não existir devolver a mensagem de erro */
             if(current_node == NULL){
@@ -307,7 +307,7 @@ void handle_list_command(tree_link root)
         }
     }
     /* Imprimir todas as subdiretorias da diretoria */
-    print_subdirs(current_node -> subdirs);
+    print_subdirs(current_node -> directory -> subdirs);
 }
 
 /*
@@ -320,7 +320,7 @@ void print_subdirs(tree_link head)
         if (head == NULL)
             return;
         print_subdirs(head->left);
-        printf("%s\n", head->dir);
+        printf("%s\n", head->directory->dir);
         print_subdirs(head->right);
     return;
 }
@@ -382,7 +382,7 @@ void handle_delete_command(tree_link root, list_link *hash_head)
         dir_token = strtok(path_buffer, "/");
         while(dir_token != NULL)
         {
-            current_node = current_node -> subdirs;
+            current_node = current_node -> directory -> subdirs;
             current_node = search_tree(current_node, dir_token);
             /* erro se a diretoria não existir */
             if(current_node == NULL){
@@ -392,28 +392,30 @@ void handle_delete_command(tree_link root, list_link *hash_head)
             dir_token = strtok(NULL, "/");
         }
         /* apagar as subdiretorias da diretoria */
-        delete_tree(current_node->subdirs, hash_head);
-        current_node -> subdirs = NULL;
+        delete_tree(current_node->directory->subdirs, hash_head);
+        current_node -> directory -> subdirs = NULL;
         /* apagar a lista de criação da diretoria */
-        nuke_list(current_node->creation);
-        current_node -> creation = NULL;
+        nuke_list(current_node->directory->creation);
+        current_node -> directory -> creation = NULL;
         /* apagar a entrada na hash table da diretoria se possuir valor */
         delete_hash(current_node, hash_head);
         /* father_node irá ser o pai da diretoria */
-        father_node = current_node -> parent_dir;
+        father_node = current_node -> directory -> parent_dir;
         /* apagar a diretoria da árvore de subdiretorias da diretoria pai */
-        father_node->creation = delete_listlink(father_node->creation, current_node);
+        father_node->directory->creation = 
+        delete_listlink(father_node->directory->creation, current_node->directory);
         /* apagar a diretoria da lista de criação da diretoria pai*/
-        father_node->subdirs = delete_treelink(father_node->subdirs, current_node->dir);
+        father_node->directory->subdirs = 
+        delete_treelink(father_node->directory->subdirs, current_node->directory->dir);
     }
     else
     {
         /* se nao possuir apaga-se as subdiretorias da root */
-        delete_tree(root->subdirs, hash_head);
+        delete_tree(root->directory->subdirs, hash_head);
         /* apagar a lista da ordem de criação da root */
-        nuke_list(root->creation);
-        root -> subdirs = NULL;
-        root -> creation = NULL;
+        nuke_list(root->directory->creation);
+        root -> directory -> subdirs = NULL;
+        root -> directory -> creation = NULL;
     }
 }
 
@@ -431,16 +433,17 @@ void delete_tree(tree_link h, list_link *hash_head)
     delete_tree(h->left, hash_head);
     delete_tree(h->right, hash_head);
     /* se o elemento tiver subdiretorias, apaga-se as subdiretorias */
-    if (h -> subdirs != NULL)
+    if (h -> directory -> subdirs != NULL)
     {
-        delete_tree(h -> subdirs, hash_head);
-        nuke_list(h->creation);
+        delete_tree(h -> directory -> subdirs, hash_head);
+        nuke_list(h -> directory -> creation);
     }
     /* apagar a entrada na hash table */
     delete_hash(h, hash_head);
     /* dar free da string do nome da diretoria e do value */
-    free(h->dir);
-    free(h->value);
+    free(h->directory->dir);
+    free(h->directory->value);
+    free(h-> directory);
     free(h);
     return;
 }
@@ -452,11 +455,12 @@ void delete_tree(tree_link h, list_link *hash_head)
 void handle_quit_command(tree_link root, list_link *hash_head)
 {
     /* apagar todas as subdiretorias da root */
-    delete_tree(root->subdirs, hash_head);
+    delete_tree(root->directory->subdirs, hash_head);
     /* apagar a lista de criação da root */
-    nuke_list(root->creation);
+    nuke_list(root->directory->creation);
     /* dar free da hash table e da root */
     free(hash_head);
+    free(root->directory);
     free(root);
     return;
 }
